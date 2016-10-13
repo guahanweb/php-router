@@ -24,12 +24,21 @@ class Request {
     }
 
     public function __get($k) {
+        static $body;
+
         switch ($k) {
             case 'method':
             case 'headers':
             case 'query':
             case 'uri':
                 return $this->$k;
+                break;
+
+            case 'body':
+                if (is_null($body)) {
+                    $body = $this->parseBody();
+                }
+                return $body;
                 break;
 
             default:
@@ -50,6 +59,25 @@ class Request {
             }
         }
         return $headers;
+    }
+
+    protected function parseBody() {
+        // no body allowed for GET or DELETE requests
+        if ($this->method == 'GET' || $this->method == 'DELETE') {
+            return '';
+        }
+
+        // Process POST and PUT appropriately
+        $data = null;
+        if (isset($this->headers['Content-Type']) && $this->headers['Content-Type'] == 'multipart/form-data') {
+            $data = $_POST;
+        } else {
+            // handle raw body, and parse if content-type if application/json
+            $data = file_get_contents('php://input');
+            if (isset($this->headers['Content-Type']) && $this->headers['Content-Type'] == 'application/json') {
+                $data = json_decode(trim($data));
+            }
+        }
     }
 }
 

@@ -1,16 +1,18 @@
 <?php
 namespace GuahanWeb\Http;
 
+class RouterException extends \Exception {}
+
 class Router {
     protected $routes;
+    protected $supported_methods;
 
     protected function __construct() {
-        $this->routes = array(
-            'GET' => array(),
-            'POST' => array(),
-            'PUT' => array(),
-            'DELETE' => array()
-        );
+        $this->supported_methods = array('GET', 'POST', 'PUT', 'DELETE');
+        $this->routes = array();
+        foreach ($this->supported_methods as $method) {
+            $this->routes[$method] = array();
+        }
     }
 
     static public function instance() {
@@ -58,10 +60,80 @@ class Router {
         return false;
     }
 
-    public function get($route, $handler) {
-        $this->routes['GET'][$route] = $handler;
+    /**
+     * Registers a new route
+     *
+     * @param {string|array} $method The HTTP method(s) this route supports
+     * @param {string} $route The route pattern to register
+     * @param {function} $handler The handler to execute when route and method matches
+     * @return void
+     */
+    public function route($method, $route, $handler) {
+        if (is_array($method)) {
+            foreach ($method as $m) {
+                $this->route($m, $route, $handler);
+            }
+        } elseif ($method == '*') {
+            foreach ($this->supported_methods as $m) {
+                $this->route($m, $route, $handler);
+            }
+        } elseif (in_array($method, strtoupper($this->supported_methods))) {
+            $this->routes[strtoupper($method)][$route] = $handler;
+        } else {
+            throw new RouterException(sprintf('Unsupported HTTP verb provided for route: %s', $method));
+        }
     }
 
+    /**
+     * Shorthand to register GET handlers
+     *
+     * @param {string} $route The route pattern to register
+     * @param {function} $handler The handler to execute when route matches
+     * @return void
+     */
+    public function get($route, $handler) {
+        $this->route('GET', $route, $handler);
+    }
+
+    /**
+     * Shorthand to register POST handlers
+     *
+     * @param {string} $route The route pattern to register
+     * @param {function} $handler The handler to execute when route matches
+     * @return void
+     */
+    public function post($route, $handler) {
+        $this->route('POST', $route, $handler);
+    }
+
+    /**
+     * Shorthand to register PUT handlers
+     *
+     * @param {string} $route The route pattern to register
+     * @param {function} $handler The handler to execute when route matches
+     * @return void
+     */
+    public function put($route, $handler) {
+        $this->route('PUT', $route, $handler);
+    }
+
+    /**
+     * Shorthand to register DELETE handlers
+     *
+     * @param {string} $route The route pattern to register
+     * @param {function} $handler The handler to execute when route matches
+     * @return void
+     */
+    public function delete($route, $handler) {
+        $this->route('DELETE', $route, $handler);
+    }
+
+    /**
+     * Activates the router to begin handling the HTTP request. If no matching routes are found,
+     * we will automatically send a 404.
+     *
+     * @return void
+     */
     public function process() {
         $request = new Request();
         $response = new Response();
