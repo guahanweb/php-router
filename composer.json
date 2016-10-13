@@ -1,0 +1,23 @@
+{
+    "name": "guahanweb/php-router",
+    "description": "A lightweight router for PHP projects",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Garth Henson",
+            "email": "garth@guahanweb.com",
+            "homepage": "http://www.guahanweb.com",
+            "role": "Lead Developer"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.2.7"
+    },
+    "autoload": {
+        "psr-0": {
+            "GuahanWeb\\Http": "src/"
+        }
+    }
+}
