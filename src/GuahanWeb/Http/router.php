@@ -77,7 +77,7 @@ class Router {
             foreach ($this->supported_methods as $m) {
                 $this->route($m, $route, $handler);
             }
-        } elseif (in_array($method, strtoupper($this->supported_methods))) {
+        } elseif (in_array(strtoupper($method), $this->supported_methods)) {
             $this->routes[strtoupper($method)][$route] = $handler;
         } else {
             throw new RouterException(sprintf('Unsupported HTTP verb provided for route: %s', $method));
