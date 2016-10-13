@@ -69,7 +69,7 @@ class Request {
 
         // Process POST and PUT appropriately
         $data = null;
-        if (isset($this->headers['Content-Type']) && $this->headers['Content-Type'] == 'multipart/form-data') {
+        if (isset($_POST)) {
             $data = $_POST;
         } else {
             // handle raw body, and parse if content-type if application/json
