@@ -14,3 +14,5 @@ $router->get('/', function ($req, $res) {
 
 $router->process();
 ```
+
+More documentation needed.
