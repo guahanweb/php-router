@@ -6,15 +6,26 @@ class RouterException extends \Exception {}
 class Router {
     protected $routes;
     protected $supported_methods;
+    protected $default_handlers;
 
     protected function __construct() {
         $this->supported_methods = array('GET', 'POST', 'PUT', 'DELETE');
         $this->routes = array();
         foreach ($this->supported_methods as $method) {
             $this->routes[$method] = array();
+            $this->default_handlers[$method] = function ($req, $res) {
+                // All verbs will return a 404 by default
+                $res->send('Not found', 404);
+            };
         }
     }
 
+    /**
+     * Retrieves the shared router instance
+     *
+     * @public
+     * @return {Router}
+     */
     static public function instance() {
         static $instance;
 
@@ -25,6 +36,15 @@ class Router {
         return $instance;
     }
 
+    /**
+     * Looks for a matching registered route for the provided method and uri combination.
+     *
+     * @protected
+     * @param {string} $method The HTTP verb of the request
+     * @param {string} $uri The URI of the request
+     * @param {array} $params Optional reference for extracted parameters
+     * @return {function|false}
+     */
     protected function match($method, $uri, &$params = null) {
         if (isset($this->routes[$method])) {
             foreach ($this->routes[$method] as $route => $handler) {
@@ -140,7 +160,7 @@ class Router {
 
         if (false === ($handler = $this->match($request->method, $request->uri, $params))) {
             // Error case
-            $response->send('Not found', 404);
+            $this->default_handlers[$request->method]($request, $response);
         }
 
         // route params applied to the request object

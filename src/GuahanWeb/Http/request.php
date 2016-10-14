@@ -23,6 +23,13 @@ class Request {
         $this->params = array();
     }
 
+    /**
+     * Let's try to make some variables more accessible for consumption
+     *
+     * @public
+     * @param {string} $k The key being requested
+     * @return {mixed}
+     */
     public function __get($k) {
         static $body;
 
@@ -35,6 +42,8 @@ class Request {
                 break;
 
             case 'body':
+                // We will only parse the body if it is requested, and then only
+                // once. We want to keep the processing as light as possible
                 if (is_null($body)) {
                     $body = $this->parseBody();
                 }
@@ -61,15 +70,21 @@ class Request {
         return $headers;
     }
 
+    /**
+     * Attempt to parse the body of the request (considering all HTTP verbs and limitations).
+     *
+     * @protected
+     * @return {string|object|null}
+     */
     protected function parseBody() {
         // no body allowed for GET or DELETE requests
         if ($this->method == 'GET' || $this->method == 'DELETE') {
-            return '';
+            return null;
         }
 
-        // Process POST and PUT appropriately
         $data = null;
-        if (isset($_POST)) {
+        if ($this->method == 'POST' && isset($this->headers['Content-Type']) && strpos($this->headers['Content-Type'], 'multipart/form-data') === 0) {
+            // POST requests may have multipart/form-data already parsed
             $data = $_POST;
         } else {
             // handle raw body, and parse if content-type if application/json
@@ -78,6 +93,7 @@ class Request {
                 $data = json_decode(trim($data));
             }
         }
+        return $data;
     }
 }
 
