@@ -206,3 +206,37 @@ In both `PUT` and `POST` cases, if neither JSON nor form content are specified,
 the raw string of the body will be returned.
 
 ## Response Object
+
+The response object allows for granular control over the HTTP response sent back
+to the browser.
+
+### Methods
+
+#### `setHeader($k, $v)`
+
+Allows you to set or override default headers before the response is sent.
+
+```php
+$res->setHeader('Content-Type', 'application/json');
+$res->send(json_encode(array('foo' => 'bar')));
+```
+
+NOTE: the default content type of responses will be `text/html`.
+
+#### `setHeaders($headers)`
+
+Shortcut to set multiple headers at once. This method accepts an array of headers
+where the key is the header name and the value is the header content.
+
+#### `send($content, [$code])`
+
+This method will send the final built response back to the user. The optional
+`$code` parameter will allow you to specify status codes other than the default
+`200 Success` response.
+
+```php
+$router->route('*', '/admin', function ($req, $res) {
+    $res->send('What do you think you are doing?', 500);
+});
+```
+
