@@ -13,7 +13,7 @@ configuration.
 
 Install with [Composer](https://www.getcomposer.org):
 ```
-$ composer install guahanweb/php-router
+$ composer require guahanweb/php-router
 ```
 
 ## Usage
