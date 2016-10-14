@@ -61,10 +61,10 @@ a single registration call:
 
 ```php
 // multiple verbs
-$router->route(['POST', 'PUT'], $handler);
+$router->route(['POST', 'PUT'], $route, $handler);
 
 // wildcard for all supported verbs
-$router->route('*', $handler);
+$router->route('*', $route, $handler);
 ```
 
 ### Route patterns and parameters
