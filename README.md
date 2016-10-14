@@ -88,7 +88,7 @@ URI agnostic of the inner match, we can do something like this:
 // match a path with json extension
 // URI: /api/v1/my_method/json
 $router->get('/api/{path*}/json', function ($req, $res) {
-    // $req->path == 'v1/my_method'
+    $res->send($req->path); // v1/my_method
 });
 ```
 
