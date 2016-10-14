@@ -38,4 +38,57 @@ $router->get('/', function ($req, $res) {
 $router->process();
 ```
 
-That's all there is to it!
+## Router
+
+Routing is supported in the same basic pattern as Express.js. Provided
+an HTTP verb, route pattern and handler, the handler will be executed
+whenever the pattern and verb combination match the registered route.
+
+### Registering a route
+
+A route may be registered one of two ways. The first is by explicit verb
+methods:
+
+```php
+$router->get($route, $handler);
+$router->post($route, $handler);
+$router->put($route, $handler);
+$router->delete($route, $handler);
+```
+
+A second option is to register one or more verbs (or all with a `*`) in
+a single registration call:
+
+```php
+// multiple verbs
+$router->route(['POST', 'PUT'], $handler);
+
+// wildcard for all supported verbs
+$router->route('*', $handler);
+```
+
+### Route patterns and parameters
+
+If you are wishing to capture parameters from your route URI, you may use
+brackets to name your parameters. These parameters will be applied as
+properties on the request object:
+
+```php
+// capture a username
+$router->get('/profile/{username}', function ($req, $res) {
+    var_dump($req->username);
+});
+```
+
+You may also choose to greedily grab blocks of the path for manual parsing.
+For instance, if we wanted to distinguish between a `json` extension to a
+URI agnostic of the inner match, we can do something like this:
+
+```php
+// match a path with json extension
+// URI: /api/v1/my_method/json
+$router->get('/api/{path*}/json', function ($req, $res) {
+    // $req->path == 'v1/my_method'
+});
+```
+
