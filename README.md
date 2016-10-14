@@ -214,14 +214,10 @@ to the browser.
 
 #### `setHeader($k, $v)`
 
-Allows you to set or override default headers before the response is sent.
-
-```php
-$res->setHeader('Content-Type', 'application/json');
-$res->send(json_encode(array('foo' => 'bar')));
-```
-
-NOTE: the default content type of responses will be `text/html`.
+Allows you to set or override default headers before the response is sent. The
+default content type is dependent upon the data being sent. If a string is passed,
+the content type defaults to `text/html`, but if an array or object is passed,
+the content will be JSON encoded and sent with `application/json` type instead.
 
 #### `setHeaders($headers)`
 
@@ -240,3 +236,81 @@ $router->route('*', '/admin', function ($req, $res) {
 });
 ```
 
+Here is an example of an endpoint that lets you examine properties of all requests
+from all verbs.
+
+```php
+// examine request from any verbs
+$router->route('*', '/info', function ($req, $res) {
+    $res->send(array(
+        'method' => $req->method,
+        'uri' => $req->uri,
+        'query' => $req->query,
+        'headers' => $req->headers,
+        'body' => $req->body
+    ));
+});
+```
+
+## Server Configuration
+
+In order to make the most use out of manual routing, it is recommended that you 
+configure your server to funnel all requests you are wanting to handle into a
+single PHP file.
+
+### Nginx example
+
+If you are planning to use the `PUT` and `DELETE` verbs with your routing, you will
+need to be sure your Nginx has been built `--with-webdav` installed. Then, in your
+configuration, you will need to enable the additional methods:
+
+```
+dav_methods PUT DELETE;
+```
+
+I also recommend providing a base location from which Nginx can serve all your
+static content so that you only have to process PHP for protected content or things
+requiring additional logic.
+
+```
+location ~* ^/(css|js|img|font)/ {
+    root /var/www/<my-project>/assets;
+}
+```
+
+One other thing I like to do is only direct traffic that doesn't explicitly match
+another file on disk. So, a full configuration may look like this:
+
+```
+server {
+    charset UTF-8;
+    listen 80;
+    server_name <project-domain>;
+    access_log /var/www/logs/<project-domain>/access.log;
+
+    location ~* ^/(css|js|img|font)/ {
+        root /var/www/<project-domain>/assets;
+    }
+
+    location / {
+        root /var/www/<project-domain>;
+        index index.php index.html index.htm;
+        include /usr/local/etc/nginx/conf.d/php-fpm;
+
+        dav_methods PUT DELETE;
+
+        if (!-e $request_filename) {
+            rewrite ^(.+)$ /index.php last;
+        }
+
+        error_page 404 /index.php;
+    }
+}
+```
+
+## Conclusion
+
+There are many different ways to solve this challenge, and I have simply looked
+into the model that best fits my personal preference. If you have ideas that may
+improve this project or simply want to let me know that it's helped you, please
+feel free to contact me.
