@@ -11,7 +11,7 @@ configuration.
 
 ## Installation
 
-Install with [Composer](https://www.getcomposer.org):
+Install with [Composer](https://getcomposer.org):
 ```
 $ composer require guahanweb/php-router
 ```
